@@ -1,0 +1,132 @@
+{
+   "_audit_trail":{
+      "agents_called":[
+         "JourneyClassifierAgent",
+         "CustomerPartyProfileAgent",
+         "TransactionPatternAgent",
+         "RiskRulesAgent",
+         "KYBNoteAgent",
+         "CompanyHouseAgent",
+         "SentimentAnalysisAgent"
+      ],
+      "customer_id":"CUST-0001",
+      "timestamp":"Fri Jan 16 13:02:34 IST 2026"
+   },
+   "transaction_insights":{
+      "summary":"Across 6 months ending 2025-10, outward volumes reached INR 45.0 Mn. International outward payments changed approx. 6% month-on-month. High-risk country share at 8%; cash deposits represent ~4% of outward flows. Candidate triggers identified: TRIG_HIGH_RISK_COUNTRY.",
+      "candidate_triggers":[
+         "TRIG_HIGH_RISK_COUNTRY"
+      ],
+      "supporting_metrics":{
+         "latest_period":"2025-10",
+         "high_risk_country_share_pct":8,
+         "intl_outward_change_pct":6,
+         "cash_deposit_ratio_pct":4,
+         "period_covered_months":6
+      }
+   },
+   "recommended_actions":[
+      "Conduct an immediate KYB review to update information and assess the current risk profile of ABC Exports Private Limited.",
+      "Investigate the nature of transactions involving high-risk countries and implement appropriate monitoring measures.",
+      "Establish a more frequent review schedule for KYB assessments to avoid overdue triggers in the future.",
+      "Communicate with the entity to understand the rationale behind their transaction patterns, particularly the engagement with high-risk jurisdictions.",
+      "Review the background and business activities of the medium-risk directors for any potential discrepancies or risks."
+   ],
+   "kyb_note":"The KYB assessment for ABC Exports Private Limited indicates a heightened risk status, with a score of 47 classified in the RED risk band. Key risk indicators include a recent KYB review that is overdue by more than 18 months and international payments with an 8% share directed towards high-risk countries. Additionally, the presence of medium-risk directors elevates the potential risk profile of the entity. Given these concerns, immediate actions are warranted to mitigate the identified risks and ensure compliance with KYC regulations.",
+   "risk_assessment":{
+      "score":47,
+      "risk_band":"RED",
+      "score_breakdown":{
+         "trigger_impacts":[
+            {
+               "code":"TRIG_KYB_OVERDUE",
+               "delta":15
+            },
+            {
+               "code":"TRIG_HIGH_RISK_COUNTRY",
+               "delta":12
+            }
+         ],
+         "base_score":20
+      },
+      "triggers_fired":[
+         {
+            "severity":"HIGH",
+            "reason":"Last KYB review on 2024-01-20 exceeds 18 month limit.",
+            "code":"TRIG_KYB_OVERDUE"
+         },
+         {
+            "severity":"HIGH",
+            "reason":"High-risk country share approx 8% of outward flows.",
+            "code":"TRIG_HIGH_RISK_COUNTRY"
+         }
+      ],
+      "overall_reasoning":"Base score 20 derived from internal rating MEDIUM for journey type LIMITED_COMPANY_SINGLE. Triggers fired: TRIG_KYB_OVERDUE (Last KYB review on 2024-01-20 exceeds 18 month limit.); TRIG_HIGH_RISK_COUNTRY (High-risk country share approx 8% of outward flows.). Final band RED.",
+      "journey_type":"LIMITED_COMPANY_SINGLE"
+   },
+   "entity_profile":{
+      "customer_id":"CUST-0001",
+      "legal_name":"ABC Exports Private Limited",
+      "sector":"Manufacturing",
+      "country_of_incorporation":"IN",
+      "primary_operating_country":"IN",
+      "onboarding_date":"2019-03-15",
+      "kyb_status":"ACTIVE",
+      "turnover_band_inr":"25-50 CR",
+      "kyb_last_review_date":"2024-01-20",
+      "kyb_last_review_outcome":"LOW",
+      "journey_type":"LIMITED_COMPANY_SINGLE"
+   },
+   "group_context":null,
+   "journey_type":"LIMITED_COMPANY_SINGLE",
+   "party_summary":{
+      "parties":[
+         {
+            "role":"Director",
+            "party_id":"CUST-0001-P01",
+            "risk_label":"Medium",
+            "name":"Rohan Mehta",
+            "key_flags":[
+               
+            ]
+         },
+         {
+            "role":"Beneficial Owner",
+            "party_id":"CUST-0001-P02",
+            "risk_label":"Low",
+            "name":"Shreya Iyer",
+            "key_flags":[
+               
+            ]
+         },
+         {
+            "role":"Signatory",
+            "party_id":"CUST-0001-P03",
+            "risk_label":"Medium",
+            "name":"Carlos Mendes",
+            "key_flags":[
+               
+            ]
+         }
+      ],
+      "key_observations":"The entity has a director and a signatory with a medium risk label. Notable parties are residents of India and the UAE. There are no PEP or sanctions flags."
+   },
+   "organization_structure":"https://blobv2anlaytics.blob.core.windows.net/aihackathon/Team_Hierarchy.png?sp=racwl&st=2025-12-01T12:26:24Z&se=2025-12-11T20:41:24Z&spr=https&sv=2024-11-04&sr=c&sig=8wftin6IHLNEG95LtEetp0pbxFyHcjb6wSP07RFxS0Y%3D",
+   "companies_house":{
+      "customer_id":"CUST-0001",
+      "error":"Companies House lookup failed",
+      "message":"400 Bad Request from GET https://api.company-information.service.gov.uk/search/companies"
+   },
+   "sentiment_analysis":{
+      "analyzed_tweet_count":5,
+      "sentiment_summary":{
+         "positive":1,
+         "neutral":2,
+         "negative":2,
+         "total":5
+      },
+      "topic":"AskNationwide",
+      "customer_id":"CUST-0001",
+      "status":"sample_data"
+   }
+}
