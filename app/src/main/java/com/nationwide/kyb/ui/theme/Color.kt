@@ -2,6 +2,9 @@ package com.nationwide.kyb.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val PrimaryNavy = Color(0xFF0e294b)
+val LightGreyBackground = Color(0xFFF5F5F5)
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
