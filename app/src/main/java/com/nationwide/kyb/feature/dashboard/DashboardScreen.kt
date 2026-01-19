@@ -4,14 +4,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -20,12 +17,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nationwide.kyb.core.utils.Logger
 import com.nationwide.kyb.domain.model.RecentKybCheck
 import com.nationwide.kyb.domain.model.RiskBand
 import com.nationwide.kyb.domain.model.UiState
 import com.nationwide.kyb.domain.model.WorkflowStep
+import com.nationwide.kyb.ui.theme.DisabledGrey
+import com.nationwide.kyb.ui.theme.KybAIWorkflowBackground
 import com.nationwide.kyb.ui.theme.PrimaryNavy
+import com.nationwide.kyb.ui.theme.SelectedBlue
+import com.nationwide.kyb.ui.theme.lightGrey
 
 /**
  * Dashboard Screen
@@ -137,7 +137,7 @@ fun DashboardScreen(
                             Text(
                                 text = "Single view of KYB risk and recommended actions for business customers.",
                                 fontSize = 16.sp,
-                                color = Color(0xFF6A7A89)
+                                color = lightGrey
                             )
                         }
                     }
@@ -163,7 +163,7 @@ fun DashboardScreen(
                                 enabled = state.data.isRunButtonEnabled && workflowState is WorkflowState.Idle,
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (state.data.isRunButtonEnabled) PrimaryNavy else Color(0xFFECEFF1),
+                                    containerColor = if (state.data.isRunButtonEnabled) SelectedBlue else DisabledGrey,
                                     contentColor = if (state.data.isRunButtonEnabled) Color.White else Color.Gray,
                                     disabledContainerColor = Color(0xFFECEFF1),
                                     disabledContentColor = Color.Gray
@@ -255,7 +255,7 @@ private fun CustomerSelectionSection(
     onCustomerSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -276,7 +276,7 @@ private fun CustomerSelectionSection(
                 fontWeight = FontWeight.Bold,
                 color = PrimaryNavy
             )
-            
+
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -295,7 +295,7 @@ private fun CustomerSelectionSection(
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true
                 )
-                
+
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
@@ -303,8 +303,8 @@ private fun CustomerSelectionSection(
                 ) {
                     availableCustomers.forEach { customerId ->
                         DropdownMenuItem(
-                            text = { 
-                                Text("${customerId} - ${customerNameMap[customerId] ?: ""}") 
+                            text = {
+                                Text("${customerId} - ${customerNameMap[customerId] ?: ""}")
                             },
                             onClick = {
                                 onCustomerSelected(customerId)
@@ -325,7 +325,7 @@ private fun KybWorkflowCard(workflowState: WorkflowState) {
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFECEFF1) // Light grey
+            containerColor = KybAIWorkflowBackground
         )
     ) {
         Column(
@@ -340,7 +340,7 @@ private fun KybWorkflowCard(workflowState: WorkflowState) {
                 fontWeight = FontWeight.Bold,
                 color = PrimaryNavy
             )
-            
+
             when (workflowState) {
                 is WorkflowState.Idle -> {
                     // Hidden by default
@@ -409,7 +409,7 @@ private fun WorkflowStepIndicator(
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.width(16.dp)
                 )
-                
+
                 // Step text - turns green when completed, italic style
                 val isCompleted = completedSteps.contains(step)
                 Text(
@@ -444,7 +444,7 @@ private fun RecentCheckItem(
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f)
         )
-        
+
         // Colored circle for risk indicator
         Text(
             text = "●",

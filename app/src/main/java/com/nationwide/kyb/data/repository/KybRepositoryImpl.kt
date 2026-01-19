@@ -5,7 +5,6 @@ import com.nationwide.kyb.data.datasource.MockDataSource
 import com.nationwide.kyb.data.local.DataStoreManager
 import com.nationwide.kyb.domain.model.KybData
 import com.nationwide.kyb.domain.model.RecentKybCheck
-import com.nationwide.kyb.domain.model.RiskBand
 import com.nationwide.kyb.domain.repository.KybRepository
 import kotlinx.coroutines.flow.first
 
@@ -18,7 +17,13 @@ class KybRepositoryImpl(
     private val dataStoreManager: DataStoreManager
 ) : KybRepository {
     
+    private var cachedKybData: KybData? = null
+
     override suspend fun getKybData(customerId: String, correlationId: String): KybData? {
+        if (cachedKybData != null) {
+            return cachedKybData
+        }
+
         Logger.logEvent(
             eventName = "GET_KYB_DATA_REQUESTED",
             correlationId = correlationId,
@@ -26,7 +31,11 @@ class KybRepositoryImpl(
             screenName = "Repository"
         )
         
-        return mockDataSource.loadKybData(customerId, correlationId)
+        val result = mockDataSource.loadKybData(customerId, correlationId)
+        if (result != null) {
+            cachedKybData = result
+        }
+        return result
     }
     
     override suspend fun getAllCustomers(): List<String> {
