@@ -67,7 +67,7 @@ com.nationwide.kyb
 1. **App Launch**
    - Customer dropdown shows hint: "Select a customer"
    - No default selection
-   - "Run Ongoing KYB Check" button **DISABLED**
+   - "Start Risk Scan" button **DISABLED**
    - KYB workflow card inactive
    - Recent KYB checks list **EMPTY**
 
@@ -80,7 +80,7 @@ com.nationwide.kyb
 3. **KYB Workflow Simulation**
    - On "Run Ongoing KYB Check" click:
      - Generates correlationId (UUID)
-     - Shows KYB AI workflow card
+     - Shows Analysis Timeline card
      - Animates steps every 2 seconds:
        1. Journey Classifier
        2. Entity & Parties

@@ -1,47 +1,46 @@
 package com.nationwide.kyb.data.repository
 
 import com.nationwide.kyb.core.utils.Logger
-import com.nationwide.kyb.data.datasource.MockDataSource
+import com.nationwide.kyb.data.datasource.remote.KybRemoteDataSource
 import com.nationwide.kyb.data.local.DataStoreManager
-import com.nationwide.kyb.domain.model.KybData
+import com.nationwide.kyb.domain.model.KybRunResult
 import com.nationwide.kyb.domain.model.RecentKybCheck
 import com.nationwide.kyb.domain.repository.KybRepository
 import kotlinx.coroutines.flow.first
 
 /**
  * Implementation of KybRepository
- * Uses MockDataSource for JSON data and DataStoreManager for persistence
+ * Uses KybRemoteDataSource for API calls and DataStoreManager for persistence
+ * All errors are handled here; repository never throws exceptions
  */
 class KybRepositoryImpl(
-    private val mockDataSource: MockDataSource,
+    private val remoteDataSource: KybRemoteDataSource,
     private val dataStoreManager: DataStoreManager
 ) : KybRepository {
-    
-    private var cachedKybData: KybData? = null
 
-    override suspend fun getKybData(customerId: String, correlationId: String): KybData? {
-        if (cachedKybData != null) {
-            return cachedKybData
+    private var cachedKybResult: KybRunResult? = null
+
+    override suspend fun runKybCheck(customerId: String, correlationId: String): Result<KybRunResult> {
+
+        val result = remoteDataSource.runKybCheck(customerId, correlationId)
+
+        result.onSuccess {
+            cachedKybResult = it // Cache the result on success
         }
 
         Logger.logEvent(
-            eventName = "GET_KYB_DATA_REQUESTED",
+            eventName = "REPOSITORY_KYB_RUN_REQUESTED",
             correlationId = correlationId,
             customerId = customerId,
             screenName = "Repository"
         )
         
-        val result = mockDataSource.loadKybData(customerId, correlationId)
-        if (result != null) {
-            cachedKybData = result
-        }
+        // Call remote data source
         return result
     }
     
     override suspend fun getAllCustomers(): List<String> {
-        // For now, return hardcoded customer IDs
-        // In real app, this would come from API/database
-        return listOf("CUST-0001", "CUST-0002", "CUST-0003")
+        return listOf("CUST-0001", "CUST-0002", "CUST-0003","CUST-0004")
     }
     
     override suspend fun saveRecentCheck(recentCheck: RecentKybCheck) {
@@ -58,4 +57,10 @@ class KybRepositoryImpl(
     override suspend fun getRecentChecks(): List<RecentKybCheck> {
         return dataStoreManager.recentChecks.first()
     }
+
+    override suspend fun getCachedKybResult(): KybRunResult? {
+        return dataStoreManager.getLastKybResult()
+    }
 }
+
+

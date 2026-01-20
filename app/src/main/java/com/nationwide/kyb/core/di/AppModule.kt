@@ -2,7 +2,7 @@ package com.nationwide.kyb.core.di
 
 import android.annotation.SuppressLint
 import android.content.Context
-import com.nationwide.kyb.data.datasource.MockDataSource
+import com.nationwide.kyb.data.datasource.remote.KybRemoteDataSource
 import com.nationwide.kyb.data.local.DataStoreManager
 import com.nationwide.kyb.data.repository.KybRepositoryImpl
 import com.nationwide.kyb.domain.repository.KybRepository
@@ -15,7 +15,8 @@ object AppModule {
     @SuppressLint("StaticFieldLeak")
     private var dataStoreManager: DataStoreManager? = null
     private var kybRepository: KybRepository? = null
-    
+    private var remoteDataSource: KybRemoteDataSource? = null
+
     fun provideDataStoreManager(context: Context): DataStoreManager {
         if (dataStoreManager == null) {
             dataStoreManager = DataStoreManager(context.applicationContext)
@@ -23,13 +24,21 @@ object AppModule {
         return dataStoreManager!!
     }
     
-    fun provideKybRepository(context: Context): KybRepository {
-    if (kybRepository == null) {
-        val mockDataSource = MockDataSource(context.assets)
-        val dataStoreManager = provideDataStoreManager(context)
-        kybRepository = KybRepositoryImpl(mockDataSource, dataStoreManager)
+    fun provideRemoteDataSource(): KybRemoteDataSource {
+        if (remoteDataSource == null) {
+            remoteDataSource = KybRemoteDataSource()
+        }
+        return remoteDataSource!!
     }
-    return kybRepository!!
+
+    fun provideKybRepository(context: Context): KybRepository {
+        if (kybRepository == null) {
+            val remote = provideRemoteDataSource()
+            val dataStore = provideDataStoreManager(context)
+            kybRepository = KybRepositoryImpl(remote, dataStore)
+        }
+        return kybRepository!!
+    }
 }
 
-}
+

@@ -18,8 +18,8 @@ import java.io.IOException
  * - Extensible for future API-based PDF download
  */
 object PdfUtils {
-    private const val PDF_ASSETS_PATH = "kyb_copilot_report.pdf"
-    private const val PDF_FILENAME = "kyb_copilot_report.pdf"
+    private const val PDF_ASSETS_PATH = "abc.pdf"
+    private const val PDF_FILENAME = "abc.pdf"
     
     /**
      * Copy PDF from assets to external downloads directory and open it
@@ -120,7 +120,7 @@ object PdfUtils {
         pdfUrl: String,
         correlationId: String? = null
     ): Boolean {
-        // TODO: Implement API download when needed
+
         Logger.logEvent(
             eventName = "PDF_API_DOWNLOAD_REQUESTED",
             correlationId = correlationId,

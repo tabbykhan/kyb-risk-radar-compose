@@ -8,8 +8,10 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.nationwide.kyb.domain.model.KybRunResult
 import com.nationwide.kyb.domain.model.RecentKybCheck
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /**
@@ -22,29 +24,30 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class DataStoreManager(private val context: Context) {
     private val gson = Gson()
-    
+    private val kybResultKey = stringPreferencesKey("kyb_result")
+
     companion object {
         private val SELECTED_CUSTOMER_ID_KEY = stringPreferencesKey("selected_customer_id")
         private val RECENT_CHECKS_KEY = stringPreferencesKey("recent_checks")
     }
-    
+
     // Selected Customer ID
     val selectedCustomerId: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[SELECTED_CUSTOMER_ID_KEY]
     }
-    
+
     suspend fun saveSelectedCustomerId(customerId: String) {
         context.dataStore.edit { preferences ->
             preferences[SELECTED_CUSTOMER_ID_KEY] = customerId
         }
     }
-    
+
     suspend fun clearSelectedCustomerId() {
         context.dataStore.edit { preferences ->
             preferences.remove(SELECTED_CUSTOMER_ID_KEY)
         }
     }
-    
+
     // Recent Checks
     val recentChecks: Flow<List<RecentKybCheck>> = context.dataStore.data.map { preferences ->
         val json = preferences[RECENT_CHECKS_KEY]
@@ -59,7 +62,7 @@ class DataStoreManager(private val context: Context) {
             }
         }
     }
-    
+
     suspend fun saveRecentCheck(recentCheck: RecentKybCheck) {
         context.dataStore.edit { preferences ->
             val currentJson = preferences[RECENT_CHECKS_KEY]
@@ -73,16 +76,29 @@ class DataStoreManager(private val context: Context) {
                     emptyList()
                 }
             }
-            
+
             // Add new check at the beginning and keep only last 10
             val updatedList = (listOf(recentCheck) + currentList).take(10)
             preferences[RECENT_CHECKS_KEY] = gson.toJson(updatedList)
         }
     }
-    
+
     suspend fun clearRecentChecks() {
         context.dataStore.edit { preferences ->
             preferences.remove(RECENT_CHECKS_KEY)
         }
+    }
+
+    suspend fun saveKybResult(result: KybRunResult) {
+        val json = Gson().toJson(result)
+        context.dataStore.edit {
+            it[kybResultKey] = json
+        }
+    }
+
+    suspend fun getLastKybResult(): KybRunResult? {
+        val prefs = context.dataStore.data.first()
+        val json = prefs[kybResultKey] ?: return null
+        return Gson().fromJson(json, KybRunResult::class.java)
     }
 }

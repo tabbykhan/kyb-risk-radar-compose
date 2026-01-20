@@ -3,7 +3,7 @@ package com.nationwide.kyb.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val PrimaryNavy = Color(0xFF0e294b)
-val LightGreyBackground = Color(0xFFF5F5F5)
+val LightGreyBackground = Color(0xFFF5F6F8)
 val SelectedBlue = Color(0xFF0A66C2)
 val DisabledGrey = Color(0xFFECEFF1)
 val KybAIWorkflowBackground = Color(0xFFF5F7FA)

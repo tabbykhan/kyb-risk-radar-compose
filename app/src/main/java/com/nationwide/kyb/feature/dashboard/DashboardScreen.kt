@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,20 +18,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nationwide.kyb.R
 import com.nationwide.kyb.domain.model.RecentKybCheck
 import com.nationwide.kyb.domain.model.RiskBand
 import com.nationwide.kyb.domain.model.UiState
 import com.nationwide.kyb.domain.model.WorkflowStep
-import com.nationwide.kyb.ui.theme.DisabledGrey
-import com.nationwide.kyb.ui.theme.KybAIWorkflowBackground
-import com.nationwide.kyb.ui.theme.PrimaryNavy
-import com.nationwide.kyb.ui.theme.SelectedBlue
-import com.nationwide.kyb.ui.theme.lightGrey
+import com.nationwide.kyb.ui.theme.*
 
 /**
  * Dashboard Screen
  * - Customer selection dropdown
- * - Run KYB Check button
+ * - Start Risk Scan button
  * - KYB workflow card with animated steps
  * - Recent KYB checks list
  */
@@ -48,17 +46,21 @@ fun DashboardScreen(
     val correlationId by viewModel.currentCorrelationId.collectAsStateWithLifecycle()
     val isRunButtonHidden by viewModel.isRunButtonHidden.collectAsStateWithLifecycle()
     
-    // Navigate to detail when workflow completes
+    // Safe navigation trigger - only navigates once when workflow completes
+    var navigationTriggered by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(workflowState) {
-        if (workflowState is WorkflowState.Completed) {
+        if (workflowState is WorkflowState.Completed && !navigationTriggered) {
+            navigationTriggered = true
             val completedState = workflowState as WorkflowState.Completed
             selectedCustomerId?.let { customerId ->
                 onNavigateToCustomerDetail(customerId, completedState.correlationId)
-                viewModel.resetWorkflow()
             }
+            viewModel.resetWorkflow()
+            navigationTriggered = false
         }
     }
-    
+
     Column(modifier = modifier.fillMaxSize()) {
         // App Bar
         TopAppBar(
@@ -77,11 +79,11 @@ fun DashboardScreen(
             },
             navigationIcon = {
                 Image(
-                    painter = painterResource(id = com.nationwide.kyb.R.drawable.nationwide_logo),
-                    contentDescription = "Nationwide Logo",
+                    painter = painterResource(id = R.drawable.kyb),
+                    contentDescription = "Logo",
                     modifier = Modifier
                         .padding(start = 16.dp)
-                        .size(40.dp, 40.dp),
+                        .size(50.dp, 45.dp),
                     contentScale = ContentScale.Fit
                 )
             },
@@ -99,6 +101,7 @@ fun DashboardScreen(
         )
         
         when (val state = uiState) {
+
             is UiState.Loading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -107,6 +110,7 @@ fun DashboardScreen(
                     CircularProgressIndicator()
                 }
             }
+
             is UiState.Error -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -115,7 +119,9 @@ fun DashboardScreen(
                     Text("Error: ${state.message}")
                 }
             }
+
             is UiState.Success -> {
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -155,7 +161,7 @@ fun DashboardScreen(
                         )
                     }
                     
-                    // Run KYB Check Button or Loader
+                    // Start Risk Scan Button or Loader
                     item {
                         if (!isRunButtonHidden) {
                             Button(
@@ -170,7 +176,7 @@ fun DashboardScreen(
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Run Ongoing KYB Check")
+                                Text("Start Risk Scan")
                             }
                         } else {
                             // Show loader at same position
@@ -335,7 +341,7 @@ private fun KybWorkflowCard(workflowState: WorkflowState) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "KYB AI Workflow",
+                text = "Analysis Timeline",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryNavy
@@ -358,7 +364,7 @@ private fun KybWorkflowCard(workflowState: WorkflowState) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Fetching results...",
+                        text = "Processing risk signals...",
                         style = MaterialTheme.typography.bodyMedium,
                         fontStyle = FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSurface
@@ -371,7 +377,7 @@ private fun KybWorkflowCard(workflowState: WorkflowState) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Workflow completed successfully!",
+                        text = "Processing completed successfully!",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )

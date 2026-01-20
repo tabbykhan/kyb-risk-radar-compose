@@ -3,6 +3,7 @@ package com.nationwide.kyb.feature.riskactions
 import androidx.lifecycle.viewModelScope
 import com.nationwide.kyb.core.ui.BaseViewModel
 import com.nationwide.kyb.core.utils.Logger
+import com.nationwide.kyb.domain.model.KybData
 import com.nationwide.kyb.domain.model.UiState
 import com.nationwide.kyb.domain.repository.KybRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,25 +19,41 @@ class RiskActionsViewModel(
     private val customerId: String,
     private val correlationId: String
 ) : BaseViewModel() {
-    
-    private val _uiState = MutableStateFlow<UiState<com.nationwide.kyb.domain.model.KybData>>(UiState.Loading)
-    val uiState: StateFlow<UiState<com.nationwide.kyb.domain.model.KybData>> = _uiState.asStateFlow()
-    
+
+    private val _uiState =
+        MutableStateFlow<UiState<KybData>>(UiState.Loading)
+    val uiState: StateFlow<UiState<KybData>> = _uiState.asStateFlow()
+
     init {
         loadKybData()
     }
-    
+
     private fun loadKybData() {
         viewModelScope.launch {
             try {
                 _uiState.value = UiState.Loading
-                
-                val kybData = repository.getKybData(customerId, correlationId)
-                
-                if (kybData != null) {
-                    _uiState.value = UiState.Success(kybData)
+
+                val result = repository.getCachedKybResult()
+
+                if (result != null) {
+                    _uiState.value = UiState.Success(
+                        KybData(
+                            auditTrail = result.auditTrail,
+                            transactionInsights = result.transactionInsights,
+                            recommendedActions = result.recommendedActions,
+                            kybNote = result.kybNote,
+                            riskAssessment = result.riskAssessment,
+                            entityProfile = result.entityProfile,
+                            groupContext = result.groupContext,
+                            journeyType = result.journeyType,
+                            partySummary = result.partySummary,
+                            organizationStructure = result.organizationStructure,
+                            companiesHouse = result.companiesHouse,
+                            sentimentAnalysis = result.sentimentAnalysis
+                        )
+                    )
                 } else {
-                    _uiState.value = UiState.Error("Failed to load KYB data")
+                    _uiState.value = UiState.Error("KYB data not available")
                 }
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Unknown error")

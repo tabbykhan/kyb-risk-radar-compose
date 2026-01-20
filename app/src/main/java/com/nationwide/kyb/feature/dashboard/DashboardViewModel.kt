@@ -20,9 +20,13 @@ import kotlinx.coroutines.launch
  * ViewModel for Dashboard screen
  * Handles:
  * - Customer selection
- * - First-time user state
  * - KYB workflow simulation
  * - Recent checks management
+ *
+ * IMPORTANT: API call triggers ONLY on "Start Risk Scan" button click
+ * - NOT on init{}
+ * - NOT on recomposition
+ * - NOT on ViewModel recreation
  */
 class DashboardViewModel(
     private val repository: KybRepository,
@@ -54,6 +58,7 @@ class DashboardViewModel(
         "CUST-0003" to "ABC Exports Private Limited"
     )
     
+    // Load initial state - does NOT trigger API
     init {
         loadInitialState()
     }
@@ -124,6 +129,16 @@ class DashboardViewModel(
         }
     }
     
+    /**
+     * Start Risk Scan - triggered ONLY by user button click
+     * This method:
+     * 1. Generates correlation ID
+     * 2. Hides button and shows loader
+     * 3. Calls repository.runKybCheck() via API
+     * 4. Updates workflow state with simulated steps
+     * 5. On success, completes workflow
+     * 6. Navigation happens in Composable via LaunchedEffect
+     */
     fun runKybCheck() {
         val customerId = _selectedCustomerId.value ?: return
         
@@ -132,7 +147,7 @@ class DashboardViewModel(
                 // Hide button and show loader
                 _isRunButtonHidden.value = true
                 
-                // Persist selected customer ONLY after Run KYB is triggered
+                // Persist selected customer
                 dataStoreManager.saveSelectedCustomerId(customerId)
                 
                 // Generate correlation ID
@@ -173,40 +188,48 @@ class DashboardViewModel(
                     )
                 }
                 
-                // Fetch KYB data
-                val kybData = repository.getKybData(customerId, correlationId)
-                
-                if (kybData != null) {
+                // Call repository API via runKybCheck (Result type)
+                val result = repository.runKybCheck(customerId, correlationId)
+
+                result.onSuccess { kybRunResult ->
                     // Save recent check
                     val recentCheck = RecentKybCheck(
                         customerId = customerId,
-                        customerName = kybData.entityProfile.legalName,
-                        riskBand = kybData.riskAssessment.riskBand,
+                        customerName = kybRunResult.entityProfile.legalName,
+                        riskBand = kybRunResult.riskAssessment.riskBand,
                         timestamp = System.currentTimeMillis(),
                         correlationId = correlationId
                     )
                     
                     repository.saveRecentCheck(recentCheck)
+                    dataStoreManager.saveKybResult(kybRunResult)
                     
                     // Update recent checks list
                     val updatedChecks = repository.getRecentChecks()
                     _recentChecks.value = updatedChecks
                     
-                    // Complete workflow
-                    _workflowState.value = WorkflowState.Completed(correlationId, kybData.riskAssessment.riskBand)
-                    
+                    // Complete workflow with data
+                    _workflowState.value = WorkflowState.Completed(
+                        correlationId = correlationId,
+                        riskBand = kybRunResult.riskAssessment.riskBand
+                    )
+
                     Logger.logEvent(
                         eventName = "KYB_RUN_COMPLETED",
                         correlationId = correlationId,
                         customerId = customerId,
                         screenName = "Dashboard",
-                        additionalData = mapOf("riskBand" to kybData.riskAssessment.riskBand.name)
+                        additionalData = mapOf("riskBand" to kybRunResult.riskAssessment.riskBand.name)
                     )
-                } else {
-                    _workflowState.value = WorkflowState.Error("Failed to load KYB data")
+                }
+
+                result.onFailure { error ->
+                    _workflowState.value = WorkflowState.Error(
+                        error.message ?: "Failed to load KYB data"
+                    )
                     Logger.logError(
                         eventName = "KYB_DATA_FETCH_FAILED",
-                        error = Exception("KYB data is null"),
+                        error = error,
                         correlationId = correlationId,
                         customerId = customerId,
                         screenName = "Dashboard"
@@ -245,3 +268,5 @@ sealed class WorkflowState {
     data class Completed(val correlationId: String, val riskBand: RiskBand) : WorkflowState()
     data class Error(val message: String) : WorkflowState()
 }
+
+

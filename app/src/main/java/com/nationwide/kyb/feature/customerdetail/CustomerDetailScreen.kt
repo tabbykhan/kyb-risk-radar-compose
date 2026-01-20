@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.nationwide.kyb.core.utils.Logger
-import com.nationwide.kyb.domain.model.UiState
 import com.nationwide.kyb.feature.decision.AuditScreen
 import com.nationwide.kyb.feature.decision.AuditViewModel
 import com.nationwide.kyb.feature.decision.DecisionScreen
@@ -35,7 +33,7 @@ fun CustomerDetailScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
     
     LaunchedEffect(Unit) {
         Logger.logEvent(

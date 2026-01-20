@@ -1,6 +1,7 @@
 package com.nationwide.kyb.feature.decision
 
 import androidx.lifecycle.viewModelScope
+import com.google.gson.GsonBuilder
 import com.nationwide.kyb.core.ui.BaseViewModel
 import com.nationwide.kyb.domain.model.UiState
 import com.nationwide.kyb.domain.repository.KybRepository
@@ -17,35 +18,35 @@ class AuditViewModel(
     private val customerId: String,
     private val correlationId: String
 ) : BaseViewModel() {
-    
-    private val _uiState = MutableStateFlow<UiState<String>>(UiState.Loading)
+
+    private val _uiState =
+        MutableStateFlow<UiState<String>>(UiState.Loading)
     val uiState: StateFlow<UiState<String>> = _uiState.asStateFlow()
-    
+
     init {
-        loadKybDataJson()
+        loadAuditJson()
     }
-    
-    private fun loadKybDataJson() {
+
+    private fun loadAuditJson() {
         viewModelScope.launch {
             try {
-                _uiState.value = UiState.Loading
-                
-                val kybData = repository.getKybData(customerId, correlationId)
-                
-                if (kybData != null) {
-                    // Convert to JSON string (pretty printed)
-                    val json = com.google.gson.GsonBuilder()
-                        .setPrettyPrinting()
-                        .create()
-                        .toJson(kybData)
-                    
-                    _uiState.value = UiState.Success(json)
+                val result = repository.getCachedKybResult()
+
+                if (result != null) {
+                    _uiState.value =
+                        UiState.Success(
+                            GsonBuilder()
+                                .setPrettyPrinting()
+                                .create()
+                                .toJson(result)
+                        )
                 } else {
-                    _uiState.value = UiState.Error("Failed to load KYB data")
+                    _uiState.value = UiState.Error("No audit data found")
                 }
             } catch (e: Exception) {
-                _uiState.value = UiState.Error(e.message ?: "Unknown error")
+                _uiState.value = UiState.Error(e.message ?: "Audit load failed")
             }
         }
     }
 }
+
